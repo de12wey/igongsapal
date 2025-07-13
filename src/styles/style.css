@@ -1,0 +1,81 @@
+/* Global */
+:root {
+    --grid-rows-size: 4;
+    --grid-columns-size: 4;
+    --tile-size: clamp(60px, 8vw, 100px);
+    --tile-gap: clamp(5px, 1vw, 12px);
+    --animation-time-css: 200ms;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: gainsboro;
+}
+
+/* Main layout*/
+.main-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Navbar */
+
+/* Footer */
+
+/* Game */
+#board {
+    position: relative;
+    display: grid;
+    grid-template-rows: repeat(var(--grid-rows-size), var(--tile-size));
+    grid-template-columns: repeat(var(--grid-columns-size), var(--tile-size));
+    gap: var(--tile-gap);
+    width: fit-content;
+    background-color: #aaa;
+    padding: var(--tile-gap);
+}
+
+.cell {
+    background-color: wheat;
+    width: var(--tile-size);
+    height: var(--tile-size);
+}
+
+.tile {
+    position: absolute;
+    width: var(--tile-size);
+    height: var(--tile-size);
+    border-radius: 8px;
+    background-color: #eee4da;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    line-height: var(--tile-size);
+    transition: top var(--animation-time-css) ease, left var(--animation-time-css) ease;
+    animation: pop var(--animation-time-css) ease-out;
+    z-index: 2;
+}
+.tile.no-transition {
+    transition: none !important;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.2);
+    /* opacity: 0; */
+  }
+  50% {
+    transform: scale(1.02);
+    /* opacity: 1; */
+  }
+  100% {
+    transform: scale(1);
+    /* opacity: 1; */
+  }
+}
