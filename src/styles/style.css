@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'Hakgyuansim';
+    src: url('./fonts/Hakgyoansim Byeolbichhaneul OTF L.otf') format('opentype');
+    /* Si fuera .ttf sería format('truetype') */
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* Global */
 :root {
     --grid-rows-size: 4;
@@ -5,6 +13,8 @@
     --tile-size: clamp(60px, 8vw, 100px);
     --tile-gap: clamp(5px, 1vw, 12px);
     --animation-time-css: 200ms;
+    font-family: 'Hakgyuansim', sans-serif;
+    font-size: 22px;
 }
 
 body {
@@ -67,7 +77,7 @@ body {
 
 @keyframes pop {
   0% {
-    transform: scale(0.2);
+    transform: scale(0.6);
     /* opacity: 0; */
   }
   50% {
