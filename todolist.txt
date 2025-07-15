@@ -1,0 +1,3 @@
+[ ] Main style
+[ ] Fix font size on resize
+[ ] New game overlay - Size selector

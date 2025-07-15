@@ -1,10 +1,19 @@
-@font-face {
+/* @font-face {
     font-family: 'Hakgyuansim';
     src: url('./fonts/Hakgyoansim Byeolbichhaneul OTF L.otf') format('opentype');
-    /* Si fuera .ttf sería format('truetype') */
     font-weight: normal;
     font-style: normal;
 }
+
+@font-face {
+    font-family: 'HakgyuansimBold';
+    src: url('./fonts/HakgyoansimByeolbichhaneul.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Yeon+Sung&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
 /* Global */
 :root {
@@ -12,15 +21,59 @@
     --grid-columns-size: 4;
     --tile-size: clamp(60px, 8vw, 100px);
     --tile-gap: clamp(5px, 1vw, 12px);
-    --animation-time-css: 200ms;
-    font-family: 'Hakgyuansim', sans-serif;
-    font-size: 22px;
+    --tile-font-size: clamp(30px, 2vw, 50px);
+    --animation-time-css: 150ms;
+    --tile-radius: 7px;
+    --nav-size: 128px;
+    --footer-size: 40px;
+    --status-font-size: clamp(12px, 2vw, 16px);
+
+    --black: #353535;
+    --red: #ff4930;
+    --white: whitesmoke;
+    --shadow: #888;
+    
+    /* font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale; */
+    }
+
+* {
+    user-select: none;
 }
 
 body {
     margin: 0;
     padding: 0;
-    background-color: gainsboro;
+    background-color: var(--white);
+    font-family: 'Poppins', sans-serif;
+}
+
+svg {
+    width: 24px;
+    height: auto;
+    fill: var(--white);
+}
+
+button {
+    padding: .5rem 1.2rem .5rem 1.2rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+    border: 0;
+    background-color: var(--red);
+    color: var(--white);
+    border-radius: 7px;
+    box-shadow: 1px 1px 3px var(--black);
+    outline: none;
+
+    transition: all .3s ease;
+}
+button:hover {
+    box-shadow: 1px 1px 3px var(--black);
 }
 
 /* Main layout*/
@@ -29,15 +82,98 @@ body {
     top: 0;
     left: 0;
     width: 100%;
+    height: calc(100% - var(--footer-size));
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+    z-index: -1;
 }
 
 /* Navbar */
+nav {
+    position: fixed;
+    top: 0;
+    height: 0;
+    width: 100%;
+    height: 128px;
+    display: flex;
+    align-items: end;
+}
+
+.nav-right {
+    margin-left: auto;
+    margin-right: 2rem;
+}
 
 /* Footer */
+footer {
+    position: fixed;
+    bottom: 0;
+    height: 0;
+    width: 100%;
+    height: var(--footer-size);
+    display: flex;
+    align-items: center;
+    background-color: var(--black);
+}
+
+footer span {
+    margin-left: 2rem;
+}
+
+.links-container {
+    margin-left: auto;
+    margin-right: 2rem;
+}
+
+.links-container svg {
+    margin-inline: .4rem;
+    fill: var(--shadow);
+}
+
+footer a {
+    text-decoration: none;
+    color: var(--shadow);
+}
+
+/* Body */
+.status-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 3rem;
+    width: clamp(17rem, 30% ,25rem);
+}
+
+.buttons-container {
+    margin-top: 2rem;
+}
+
+.status {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    background-color: var(--black);
+    min-width: 4.5rem;
+    color: var(--white);
+    padding: .2rem .2rem .2rem .2rem;
+    text-align: center;
+    box-shadow: 1px 1px 4px -2px var(--shadow);
+}
+
+.status span {
+    font-size: 12px;
+}
+
+.status-data {
+    display: inline-block;
+    width: 100%;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: var(--status-font-size) !important;
+    /* border-radius: 0 0 5px 5px; */
+}
 
 /* Game */
 #board {
@@ -47,14 +183,19 @@ body {
     grid-template-columns: repeat(var(--grid-columns-size), var(--tile-size));
     gap: var(--tile-gap);
     width: fit-content;
-    background-color: #aaa;
     padding: var(--tile-gap);
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px -3px var(--shadow);
+    background-color: rgb(235, 235, 235);
 }
 
 .cell {
-    background-color: wheat;
+    background-color: var(--white);
+    /* box-shadow: 0px 0px 1px black; */
+    box-shadow:inset 0px 0px 5px -2px var(--shadow);
     width: var(--tile-size);
     height: var(--tile-size);
+    border-radius: var(--tile-radius);
 }
 
 .tile {
@@ -62,9 +203,11 @@ body {
     width: var(--tile-size);
     height: var(--tile-size);
     border-radius: 8px;
-    background-color: #eee4da;
-    font-size: 2rem;
-    font-weight: bold;
+    box-shadow: 0px 1px 5px -2px var(--shadow);
+    border-radius: var(--tile-radius);
+    /* font-family: 'Noto Sans KR', sans-serif; */
+    font-size: var(--tile-font-size);
+    font-weight: normal;
     text-align: center;
     line-height: var(--tile-size);
     transition: top var(--animation-time-css) ease, left var(--animation-time-css) ease;
@@ -74,18 +217,96 @@ body {
 .tile.no-transition {
     transition: none !important;
 }
+.tile.no-animation {
+    animation: none !important;
+}
 
 @keyframes pop {
   0% {
     transform: scale(0.6);
-    /* opacity: 0; */
+    opacity: 0;
   }
   50% {
     transform: scale(1.02);
-    /* opacity: 1; */
+    opacity: 1;
   }
   100% {
     transform: scale(1);
-    /* opacity: 1; */
+    opacity: 1;
   }
+}
+
+.c2 {
+    background-color: #ffffff !important; /* blanco */
+    color: black;
+}
+
+.c4 {
+    background-color: #ebebeb !important; /* gris muy claro */
+    color: black;
+}
+
+.c8 {
+    background-color: #c7c7c7 !important; /* gris claro */
+    color: black;
+}
+
+.c16 {
+    background-color: #ffd4cd !important; /* rojo muy claro, sin pastel */
+    color: black;
+}
+
+.c32 {
+    background-color: #ff9e8f !important; /* rojo suave, saturado */
+    color: white;
+}
+
+.c64 {
+    background-color: #ff7a65 !important; /* rojo vivo */
+    color: white;
+}
+
+.c128 {
+    background-color: #ff6347 !important; /* tomato */
+    color: white;
+}
+
+.c256 {
+    background-color: #ff4930 !important; /* tomato más intenso */
+    color: white;
+}
+
+.c512 {
+    background-color: #e83b24 !important; /* rojo saturado, sin oscurecer */
+    color: white;
+}
+
+.c1024 {
+    background-color: #c93520 !important; /* rojo fuerte sin llegar a marrón */
+    color: white;
+}
+
+.c2048 {
+    background-color: #a62e1b !important; /* rojo-anaranjado */
+    color: white;
+}
+
+.c4096 {
+    background-color: #703428 !important; /* transición hacia marrón oscuro */
+    color: white;
+}
+
+.c8192 {
+    background-color: #403030 !important; /* gris negruzco */
+    color: white;
+}
+
+.c16384 {
+    background-color: #2f2f2f !important; /* casi negro */
+    color: white;
+}
+
+.c32768 {
+    background-color: #252525 !important; /* negro suave final */
+    color: white;
 }

@@ -2,25 +2,51 @@ import { getCssVariablePx } from "../utils";
 
 export class Renderer {
     domBoard: HTMLDivElement;
-    transitionTimeMs = 200; // <- Make sure it is synchronized with CSS
+    transitionTimeMs = 150; // <- Make sure it is synchronized with CSS
     namesMap = new Map<number, string>();
+    rows: number = 0;
+    colums: number = 0;
+    tileSize: number = 0;
+    tileGap: number = 0;
 
     constructor(rows: number, columns: number) {
-        this.namesMap.set(2, '이');
-        this.namesMap.set(4, '산');
-        this.namesMap.set(8, '남');
-        this.namesMap.set(16, '북');
-        this.namesMap.set(32, '서');
-        this.namesMap.set(64, '덩');
-        this.namesMap.set(128, '비');
-        this.namesMap.set(256, '술');
-        this.namesMap.set(512, '꽃');
-        this.namesMap.set(1024, '말');
-        this.namesMap.set(2048, '한');
-        this.namesMap.set(4096, '애');
-        this.namesMap.set(8192, '네');
-        this.namesMap.set(16384, '빛');
-        this.namesMap.set(32768, '별');
+        this.rows = rows;
+        this.colums = columns;
+
+        this.tileSize = getCssVariablePx('--tile-size');
+        this.tileGap = getCssVariablePx('--tile-gap');
+
+        this.namesMap.set(2, '가');
+        this.namesMap.set(4, '나');
+        this.namesMap.set(8, '다');
+        this.namesMap.set(16, '라');
+        this.namesMap.set(32, '마');
+        this.namesMap.set(64, '바');
+        this.namesMap.set(128, '사');
+        this.namesMap.set(256, '아');
+        this.namesMap.set(512, '자');
+        this.namesMap.set(1024, '차');
+        this.namesMap.set(2048, '카');
+        this.namesMap.set(4096, '타');
+        this.namesMap.set(8192, '파');
+        this.namesMap.set(16384, '하');
+        this.namesMap.set(32768, '빠');
+        
+        // this.namesMap.set(2, '2');
+        // this.namesMap.set(4, '4');
+        // this.namesMap.set(8, '8');
+        // this.namesMap.set(16, '16');
+        // this.namesMap.set(32, '32');
+        // this.namesMap.set(64, '64');
+        // this.namesMap.set(128, '128');
+        // this.namesMap.set(256, '256');
+        // this.namesMap.set(512, '512');
+        // this.namesMap.set(1024, '1024');
+        // this.namesMap.set(2048, '2048');
+        // this.namesMap.set(4096, '4096');
+        // this.namesMap.set(8192, '8192');
+        // this.namesMap.set(16384, '16384');
+        // this.namesMap.set(32768, '32768');
 
         // Changing the value of global css variables
         const root = document.documentElement;
@@ -38,6 +64,9 @@ export class Renderer {
         }
 
         window.addEventListener('resize', () => {
+            this.tileSize = getCssVariablePx('--tile-size');
+            this.tileGap = getCssVariablePx('--tile-gap');
+
             const tiles = document.querySelectorAll<HTMLDivElement>('.tile');
 
             tiles.forEach(tile => {
@@ -54,24 +83,27 @@ export class Renderer {
             });
         })
 
-        const mainContainer = document.querySelector<HTMLDivElement>('.main-container');
+        const mainContainer = document.querySelector<HTMLDivElement>('.board-container');
         mainContainer?.appendChild(this.domBoard);
     }
 
     getTilePosition(x: number, y: number): { top: number; left: number } {
-        const tileSize = getCssVariablePx('--tile-size');
-        const tileGap = getCssVariablePx('--tile-gap');
         return {
-            top: y * (tileSize + tileGap) + tileGap,
-            left: x * (tileSize + tileGap) + tileGap
+            top: y * (this.tileSize + this.tileGap) + this.tileGap,
+            left: x * (this.tileSize + this.tileGap) + this.tileGap
         };
     }
 
-    createTile(x: number, y: number, value: number): HTMLDivElement {
+    createTile(x: number, y: number, value: number, animation: boolean = true): HTMLDivElement {
         const tile = document.createElement('div');
         tile.classList.add('tile');
+        if (!animation) {
+            tile.classList.add('no-animation');
+        }
+        
         tile.dataset.x = x.toString();
         tile.dataset.y = y.toString();
+        tile.classList.add(`c${value}`);
         tile.textContent = this.namesMap.get(value)!;
 
         const { top, left } = this.getTilePosition(x, y);
@@ -81,6 +113,7 @@ export class Renderer {
         tile.style.height = 'var(--tile-size)';
 
         document.getElementById('board')!.appendChild(tile);
+
         return tile;
     }
 
@@ -158,12 +191,33 @@ export class Renderer {
                 });
 
                 this.createTile(j, i, board[i][j]);
-
+                
                 setTimeout(() => {
                     tilesDel?.forEach(t => t.remove());
                 }, this.transitionTimeMs);
-
             }
         }));
+    }
+
+    resetTiles(board: number[][]) {
+        board.forEach((r, i) => r.forEach((v, j) => {
+            const tilesDel = this.getTilesAt(j, i);
+            tilesDel?.forEach(t => t.remove());
+
+            if (board[i][j] !== 0) {
+                this.createTile(j, i, v, false);
+            }
+        }));
+    }
+
+    destroy() {
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.colums; j++) {
+                const tilesDel = this.getTilesAt(j, i);
+                tilesDel?.forEach(t => t.remove());
+            }
+        }
+
+        this.domBoard.remove();
     }
 }

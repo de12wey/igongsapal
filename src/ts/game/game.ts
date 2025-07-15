@@ -1,35 +1,114 @@
 import { Board } from "./board.ts";
+import { GameState } from "./game-state.ts";
 import { Renderer } from "./renderer.ts";
-import { Stadistics } from "./stadistics.ts";
 
 export class Game {
     board: Board;
-    config: any; //?
-    renderer: Renderer; //?
-    stadistics: Stadistics;
+    renderer: Renderer;
+
+    /* Game state */
+    best: number = 0;
+    score: number = 0;
+    moves: number = 0;
+    paused: boolean = false;
+    gameOver: boolean = false;
+    stateUpdated: () => void;
+    
+    /* Undo buffer */
+    lastPosition?: number[][];
+    lastScore: number = 0;
+    lastMoves: number = 0;
+
+    /* Event handlers */
     kdeHandler: any;
+    tsHandler: any;
+    teHandler: any;
 
-    constructor(rows: number, columns: number, config: any) {
-        
+    startX: number = 0;
+    startY: number = 0;
+    swipeDirection: string | null = null;
+
+    constructor(rows: number, columns: number, stateUpdated: () => void) {
         this.board = new Board(rows, columns);
-        this.config = config;
+        this.stateUpdated = stateUpdated;
         this.renderer = new Renderer(rows, columns);
+        
+        const best = localStorage.getItem('best');
+        if (best) {
+            this.best = parseFloat(best);
+        }
 
-        this.stadistics = new Stadistics(this.renderer);
+        /* Try to get game state from local storage */
+        const restored: GameState = JSON.parse(localStorage.getItem('gameState')!);
+        if (restored) {
+            this.board.tiles = restored.tiles;
+            this.score = restored.score;
+            this.moves = restored.moves;
+            this.lastPosition = restored.lastPosition;
+            this.lastScore = restored.lastScore;
+            this.lastMoves = restored.lastMoves;
+            this.paused = restored.paused;
+            this.gameOver = restored.gameOver;
+            this.renderer.resetTiles(this.board.tiles);
+        }
+        else {
+            this.newValue();
+            this.newValue();
+            // this.newValueDebug();
+        }
 
-        this.kdeHandler = this.keyDownEvent.bind(this)
+        this.kdeHandler = this.keyDownEvent.bind(this);
+        this.tsHandler = this.handleTouchStart.bind(this);
+        this.teHandler = this.handleTouchEnd.bind(this);
         document.addEventListener('keydown', this.kdeHandler);
-
-        this.newValue();
-        this.newValue();
+        document.addEventListener('touchstart', this.tsHandler);
+        document.addEventListener('touchend', this.teHandler);
     }
 
     keyDownEvent(event: KeyboardEvent) {
+        this.gameAction(event.key);
+    }
+
+    handleTouchStart(event: TouchEvent) {
+        const touch = event.touches[0];
+        this.startX = touch.clientX;
+        this.startY = touch.clientY;
+    }
+
+    handleTouchEnd(event: TouchEvent) {
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - this.startX;
+        const deltaY = touch.clientY - this.startY;
+
+        const threshold = 30;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (Math.abs(deltaX) > threshold) {
+                this.swipeDirection = deltaX > 0 ? 'ArrowRight' : 'ArrowLeft';
+            }
+        } else {
+            if (Math.abs(deltaY) > threshold) {
+                this.swipeDirection = deltaY > 0 ? 'ArrowDown' : 'ArrowUp';
+            }
+        }
+
+        if (this.swipeDirection) {
+            this.gameAction(this.swipeDirection);
+        }
+
+        this.swipeDirection = null;
+    }
+
+    gameAction(key: string) {
+        this.lastPosition = this.board.getBoardBuffer();
+        this.lastScore = this.score;
+        this.lastMoves = this.moves;
+
         const updatedPositions: boolean[][] = this.board.getStatesBoard();
         const boardBuffer: number[][] = this.board.getBoardBuffer();
         const movMatrix: number[][] = this.board.getNewMovMatrix();
     
-        switch (event.key) {
+        switch (key) {
             case 'ArrowUp':
                 for (let i = 1; i < this.board.tiles.length; i++) {
                     for (let j = 0; j < this.board.tiles[i].length; j++) {
@@ -153,30 +232,40 @@ export class Game {
         }
 
         if (this.board.compareBoardTo(boardBuffer)) {
-             this.stadistics.score += this.getMovScore(updatedPositions);
-             this.stadistics.totalMoves++;
+            this.score += this.getMovScore(updatedPositions);
+            this.moves++;
+            this.stateUpdated();
 
-             this.renderer.slideTiles(event.key, movMatrix);
-             this.renderer.updateTiles(this.board.tiles, updatedPositions);
-             this.newValue();
+            this.renderer.slideTiles(key, movMatrix);
+            this.renderer.updateTiles(this.board.tiles, updatedPositions);
+            this.newValue();
+            this.saveToLocal();
         }
 
-        if (this.stadistics.gameOver = this.checkGameOver()) {
+        if (this.gameOver = this.checkGameOver()) {
             console.log('Game over!');
             this.pause();
         }
     }
 
-    newValue() {
+    newValue(v: number = 0) {
         const freeCoords: number[][] = [];
         this.board.tiles.forEach( (r, i) => r.forEach( (c, j) => {
             if (c === 0) freeCoords.push([i, j])
         }));
         
         const coord: number[] = freeCoords[Math.floor(Math.random() * freeCoords.length)];
-        const value = Math.random() > .9 ? 4 : 2
+        const value = v > 0 ? v : Math.random() > .9 ? 4 : 2
         this.board.tiles[coord[0]][coord[1]] = value;
         this.renderer.createTile(coord[1], coord[0], value);
+    }
+
+    newValueDebug() {
+        let pow = 2;
+        this.board.tiles.forEach(r => r.forEach(() => {
+            this.newValue(pow);
+            pow *= 2;
+        }));
     }
 
     getMovScore(updatedPositions: boolean[][]): number {
@@ -202,13 +291,45 @@ export class Game {
         return false;
     }
 
+    undo() {
+        if (this.lastPosition !== undefined) {
+            this.score = this.lastScore;
+            this.moves = this.lastMoves;
+            this.stateUpdated();
+            this.board.tiles = this.lastPosition;
+            this.renderer.resetTiles(this.board.tiles);
+            this.saveToLocal();
+        }
+    }
+
     pause() {
         document.removeEventListener('keydown', this.kdeHandler);
-        this.stadistics.paused = true;
+        document.removeEventListener('touchstart', this.tsHandler);
+        document.removeEventListener('touchend', this.teHandler);
+        this.paused = true;
     }
 
     resume() {
         document.addEventListener('keydown', this.kdeHandler);
-        this.stadistics.paused = false;
+        document.addEventListener('touchstart', this.tsHandler);
+        document.addEventListener('touchend', this.teHandler);
+        this.paused = false;
+    }
+
+    saveToLocal() {
+        localStorage.setItem('gameState', JSON.stringify(new GameState(this)));
+
+        const best = localStorage.getItem('best');
+        if (!best || parseFloat(best) <= this.score) {
+            this.best = this.score;
+            localStorage.setItem('best', this.best.toString());
+            this.stateUpdated();
+        }
+    }
+
+    destroy() {
+        localStorage.removeItem('gameState');
+        this.pause();
+        this.renderer.destroy();
     }
 }
