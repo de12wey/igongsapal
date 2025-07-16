@@ -31,22 +31,6 @@ export class Renderer {
         this.namesMap.set(8192, '파');
         this.namesMap.set(16384, '하');
         this.namesMap.set(32768, '빠');
-        
-        // this.namesMap.set(2, '2');
-        // this.namesMap.set(4, '4');
-        // this.namesMap.set(8, '8');
-        // this.namesMap.set(16, '16');
-        // this.namesMap.set(32, '32');
-        // this.namesMap.set(64, '64');
-        // this.namesMap.set(128, '128');
-        // this.namesMap.set(256, '256');
-        // this.namesMap.set(512, '512');
-        // this.namesMap.set(1024, '1024');
-        // this.namesMap.set(2048, '2048');
-        // this.namesMap.set(4096, '4096');
-        // this.namesMap.set(8192, '8192');
-        // this.namesMap.set(16384, '16384');
-        // this.namesMap.set(32768, '32768');
 
         // Changing the value of global css variables
         const root = document.documentElement;

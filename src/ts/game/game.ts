@@ -297,6 +297,7 @@ export class Game {
             this.moves = this.lastMoves;
             this.stateUpdated();
             this.board.tiles = this.lastPosition;
+            this.lastPosition = undefined;
             this.renderer.resetTiles(this.board.tiles);
             this.saveToLocal();
         }
