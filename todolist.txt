@@ -1,2 +1,0 @@
-[ ] Game over
-[ ] New game modal

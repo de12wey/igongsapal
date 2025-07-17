@@ -13,6 +13,7 @@ export class Game {
     paused: boolean = false;
     gameOver: boolean = false;
     stateUpdated: () => void;
+    gameOverEvent: () => void;
     
     /* Undo buffer */
     lastPosition?: number[][];
@@ -28,15 +29,23 @@ export class Game {
     startY: number = 0;
     swipeDirection: string | null = null;
 
-    constructor(rows: number, columns: number, stateUpdated: () => void) {
+    constructor(rows: number, columns: number, stateUpdated: () => void, gameOverEvent: () => void) {
         this.board = new Board(rows, columns);
         this.stateUpdated = stateUpdated;
+        this.gameOverEvent = gameOverEvent;
         this.renderer = new Renderer(rows, columns);
         
         const best = localStorage.getItem('best');
         if (best) {
             this.best = parseFloat(best);
         }
+
+        this.kdeHandler = this.keyDownEvent.bind(this);
+        this.tsHandler = this.handleTouchStart.bind(this);
+        this.teHandler = this.handleTouchEnd.bind(this);
+        document.addEventListener('keydown', this.kdeHandler);
+        document.addEventListener('touchstart', this.tsHandler);
+        document.addEventListener('touchend', this.teHandler);
 
         /* Try to get game state from local storage */
         const restored: GameState = JSON.parse(localStorage.getItem('gameState')!);
@@ -50,19 +59,16 @@ export class Game {
             this.paused = restored.paused;
             this.gameOver = restored.gameOver;
             this.renderer.resetTiles(this.board.tiles);
+
+            if (restored.gameOver) {
+                this.gameOverEvent();
+            }
         }
         else {
             this.newValue();
             this.newValue();
             // this.newValueDebug();
         }
-
-        this.kdeHandler = this.keyDownEvent.bind(this);
-        this.tsHandler = this.handleTouchStart.bind(this);
-        this.teHandler = this.handleTouchEnd.bind(this);
-        document.addEventListener('keydown', this.kdeHandler);
-        document.addEventListener('touchstart', this.tsHandler);
-        document.addEventListener('touchend', this.teHandler);
     }
 
     keyDownEvent(event: KeyboardEvent) {
@@ -243,8 +249,9 @@ export class Game {
         }
 
         if (this.gameOver = this.checkGameOver()) {
-            console.log('Game over!');
+            this.gameOverEvent();
             this.pause();
+            this.saveToLocal();
         }
     }
 
