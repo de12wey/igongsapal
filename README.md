@@ -1,4 +1,4 @@
-# 2048-Hangeul
+# Igongsapal
 
 A minimalist version of the classic **2048 game**, using **Korean characters (Hangul)** instead of numbers.  
 Built with **TypeScript**, **Vite** for development/build, and **Firebase** for deployment.
